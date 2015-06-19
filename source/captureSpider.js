@@ -15,6 +15,7 @@ var limitingRegex = opts.regex;
 if(limitingRegex) limitingRegex = new RegExp(limitingRegex);
 var cap = opts.cap || false;
 var folderName = opts.folder;
+var retake = opts.retake;  //retake the screenshot if it doesn't exist
 var width = opts.width || 1024;
 var height = opts.height || 768;
 var resultFormat = opts.format || 'tsv';
@@ -39,10 +40,12 @@ if(node == true){
 }
 // ****************************************************** //
 // Screenshot capturing function
-function screenshot(view, destination, width, height) {
+function screenshot_save_location(view, destination) {
 	var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
-	var location = destination + '/' + encodeURIComponent(fileName) + ".jpg";
-	
+	return destination + '/' + encodeURIComponent(fileName) + ".jpg";
+}
+function screenshot(view, location, width, height) {
+
 	// Making the page background white instead of transparent
 	view.evaluate(function() {
 	  var style = document.createElement('style'),
@@ -79,8 +82,12 @@ casper.then(function(){
 					[
 						function(view, urlObj) {
 							if(ignore.indexOf(casper.status().currentHTTPStatus) == -1){
-								var loc = screenshot(view, folderName, width, height);
-								urlObj.screenshot = loc;
+								var save_location = screenshot_save_location(view, folderName);
+								var save_location_file_exists = false;
+								if (retake || (!retake && !save_location_file_exists)) {
+								    var url_location = screenshot(view, save_location, width, height);
+								    urlObj.screenshot = url_location;	
+								} 
 							}
 					  	}
 					]

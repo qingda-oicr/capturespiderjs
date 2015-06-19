@@ -112,6 +112,9 @@ function spider(urlObj, urlChecker, tasks) {
 			Array.prototype.forEach.call(__utils__.findAll('a'), function(e) {
 				links.push(e.getAttribute('href'));
 			});
+			Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
+				links.push(e.getAttribute('src'));
+			});
 			return links;
 		});
 		// Add newly found URLs to the stack
