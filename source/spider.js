@@ -49,6 +49,7 @@ function checkWithGoogle(url){
 
 var visitedUrls = [];
 var pendingUrls = [];
+var skippedUrls = []; 
 
 // Spider from the given URL
 // spider(Object urlObj, fn urlChecker(Str url)[, Nat cap, Arr (Object urlObj), Arr (Object urlObj))])
@@ -79,7 +80,7 @@ if(Blacklist.patternMatch(url, Blacklist.blacklistArr)) {
 		var statusStyle = { fg: 'blue', bold: true }; 
 		urlObj.status = "Skip"; 
 		this.echo(this.colorizer.format(urlObj.status, statusStyle) + ' ' + url);
-			visitedUrls.push(urlObj);
+		skippedUrls.push(urlObj);
 	});
 }
 else { 
@@ -155,6 +156,7 @@ else {
 				// Check if url passes urlChecker
 				if(urlChecker(newUrl)) {
 					var wasVisited = false;
+					var wasSkipped = false; 
 					var isPending = false;
 
 					//Check if already visited
@@ -170,10 +172,14 @@ else {
 							break;
 						}
 					}
-
-
+					// Checked if already skipped 
+					for(var i = 0; i < skippedUrls.length; i++) {
+						if(newUrl == skippedUrls[i].url) {
+							wasSkipped = true; 
+						}
+					}
 					//Check if url is pending
-					if(!wasVisited) {
+					if(!wasVisited || !wasSkipped) {
 						for(var i = 0; i < pendingUrls.length; i++) {
 							if(newUrl == pendingUrls[i].url) {
 								isPending = true;
@@ -185,7 +191,7 @@ else {
 						}
 					}
 
-					if(!wasVisited && !isPending){
+					if(!wasVisited && !isPending && !wasSkipped){
 						pendingUrls.push({
 							url: newUrl,
 							parentUrls: [ url ]
@@ -249,6 +255,7 @@ exports.spider = function(url, limitingRegex, tasks) {
 		results.count = visitedUrls.length;
 		results.visitedUrls = visitedUrls;
 		results.pendingUrls = pendingUrls;
+		results.skippedUrls = skippedUrls; ////////////// 
 	});
 	return results;
 };

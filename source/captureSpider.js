@@ -101,9 +101,7 @@ casper.then(function(){
 								} else {	
 
 									// check if file exists 
-									//// josephs code 
 									var save_location = screenshot_save_location(view, folderName);
-									//console.log("> save_location = " + save_location); 
 									var save_location_file_exists = false;
 									if(fs.exists(save_location)) {
 										console.log("! " + save_location + " already exists!!");
@@ -118,12 +116,6 @@ casper.then(function(){
 									else {
 										urlObj.screenshot = save_location; 
 									}
-									//// end j code 
-
-
-										/*var loc = screenshot(view, folderName, width, height);
-										urlObj.screenshot = loc;*/
-									
 								}
 							}
 					  	}
@@ -141,9 +133,11 @@ casper.then(function() {
 	if(resultFormat == 'json') {
 		fs.write(folderName + '/visitedUrls.json', JSON.stringify(results.visitedUrls), 'w');
 		if(results.pendingUrls) fs.write(folderName + '/pendingUrls.json', JSON.stringify(results.pendingUrls), 'w');
+		if(results.skippedUrls) fs.write(folderName + '/skippedUrls.json', JSON.stringify(results.skippedUrls), 'w');
 	} else {
 		fs.write(folderName + '/visitedUrls.tsv', csv.stringify(results.visitedUrls), 'w');
 		if(results.pendingUrls) fs.write(folderName + '/pendingUrls.tsv', csv.stringify(results.pendingUrls), 'w');
+		if(results.skippedUrls) fs.write(folderName + '/skippedUrls.tsv', csv.stringify(results.skippedUrls), 'w');
 	}
 });
 

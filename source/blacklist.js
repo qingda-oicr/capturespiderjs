@@ -14,7 +14,7 @@ function patternMatch(url, patternArr) {
 //	console.log("\n--- patternMatchinggggggg");
 	// for each patternArr, test if it is in url  
 	var matched = false; 
-	for (i = 0; i < patternArr.length; i++) {
+	for (var i = 0; i < patternArr.length; i++) {
 		if(patternArr[i].test(url)) {
 			//console.log("  $$" + patternArr[i] + "$$" + " is in " + url);
 			matched = true; 
