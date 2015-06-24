@@ -5,6 +5,7 @@ var require = patchRequire(require);
 var utils = require('utils');
 var helpers = require('./helpers');
 var googlePassed;
+//var Blacklist = require('./blacklist'); 
 
 //discovers soft 404's through a google search
 function checkWithGoogle(url){
@@ -48,6 +49,7 @@ function checkWithGoogle(url){
 
 var visitedUrls = [];
 var pendingUrls = [];
+
 // Spider from the given URL
 // spider(Object urlObj, fn urlChecker(Str url)[, Nat cap, Arr (Object urlObj), Arr (Object urlObj))])
 function spider(urlObj, urlChecker, tasks) {
@@ -65,9 +67,24 @@ function spider(urlObj, urlChecker, tasks) {
 
 	// Open the URL
 	casper.open(url);
+
 	casper.eachThen(tasks, function(response) {
 		response.data(this, urlObj);
 	});
+
+/////////////////////////////////// skip if on blacklist 
+if(Blacklist.patternMatch(url, Blacklist.blacklistArr)) {
+	casper.then(function() {	// pretty message 
+		//console.log("Skip: " + url); 
+		var statusStyle = { fg: 'blue', bold: true }; 
+		urlObj.status = "Skip"; 
+		this.echo(this.colorizer.format(urlObj.status, statusStyle) + ' ' + url);
+			visitedUrls.push(urlObj);
+	});
+}
+else { 
+///////////////////////////////////////////////////
+	// check status, echo status, scan for links on the page
 	casper.then(function() {
 		if(verify){
 	//if(url.indexOf(host) == -1){
@@ -84,7 +101,7 @@ function spider(urlObj, urlChecker, tasks) {
 		if(ignore.indexOf(status) !== -1){
 			urlObj.url = urlObj.url + " - Screenshot not taken HTTP Status = " + status.toString();
 		}
-		visitedUrls.push(urlObj);
+		visitedUrls.push(urlObj); // goes to csv here 
 
 		switch(status) {
 			case 200: var statusStyle = { fg: 'green', bold: true }; break;
@@ -94,6 +111,8 @@ function spider(urlObj, urlChecker, tasks) {
 		// Display the spidered URL and status
 		this.echo(this.colorizer.format(status, statusStyle) + ' ' + url);
 		urlObj.status = status;
+
+
 
 		// Only adds nodes to the queue if node-only mode is enabled
 		if(node == true){
@@ -106,78 +125,89 @@ function spider(urlObj, urlChecker, tasks) {
 		}
 
 		else{
-		// Find links present on this page (node only mode is off)
-		var links = this.evaluate(function() {
-			var links = [];
-			Array.prototype.forEach.call(__utils__.findAll('a'), function(e) {
-				links.push(e.getAttribute('href'));
-			});
-			Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
-				links.push(e.getAttribute('src'));
-			});
-			return links;
-		});
-		// Add newly found URLs to the stack
-		var baseUrl = this.getGlobal('location').href;
-		Array.prototype.forEach.call(links, function(link) {
-			var newUrl = helpers.absoluteUri(baseUrl, link);
-			if(ignoreParameters) {
-				newUrl = newUrl.replace(/\?.*$/, ''); //Ignoring PHP parameters
-			}
-			newUrl = newUrl.replace(/\/$/, ''); //Ignoring trailing '/' symbols
-			newUrl = newUrl.replace(/#.*$/, ''); //Ignoring hashchanges
+			// Find links present on this page (node only mode is off)
+			var links = this.evaluate(function() {
+				var links = [];
+				Array.prototype.forEach.call(__utils__.findAll('a'), function(e) {
+					links.push(e.getAttribute('href'));
+				});
+				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
+					links.push(e.getAttribute('src'));
+				});
 
-			// Check if url passes urlChecker
-			if(urlChecker(newUrl)) {
-				var wasVisited = false;
-				var isPending = false;
+				/*for each (link in links)
+					console.log("Under " + url + ": " + link); 
+				}*/
+				return links;
+			});
 
-				//Check if already visited
-				for(var i = 0; i < visitedUrls.length; i++) {
-					if(newUrl == visitedUrls[i].url
-						|| (visitedUrls[i].url).indexOf(newUrl + " - Screenshot not taken HTTP Status = ") > -1 
-						|| (visitedUrls[i].url).indexOf("Flagged Bad Url - " + newUrl) > -1 
-						) { 
-						wasVisited = true;
-						if(visitedUrls[i].parentUrls.indexOf(url) == -1){
-							visitedUrls[i].parentUrls.push(url);
-						}
-						break;
-					}
+			// Add newly found URLs to the stack
+			var baseUrl = this.getGlobal('location').href;
+			//console.log("baseUrl for " + url + " is " + baseUrl); 
+			Array.prototype.forEach.call(links, function(link) {
+				var newUrl = helpers.absoluteUri(baseUrl, link);
+				if(ignoreParameters) {
+					newUrl = newUrl.replace(/\?.*$/, ''); //Ignoring PHP parameters
 				}
+				newUrl = newUrl.replace(/\/$/, ''); //Ignoring trailing '/' symbols
+				newUrl = newUrl.replace(/#.*$/, ''); //Ignoring hashchanges
 
+				// Check if url passes urlChecker
+				if(urlChecker(newUrl)) {
+					var wasVisited = false;
+					var isPending = false;
 
-				//Check if url is pending
-				if(!wasVisited) {
-					for(var i = 0; i < pendingUrls.length; i++) {
-						if(newUrl == pendingUrls[i].url) {
-							isPending = true;
-							if(pendingUrls[i].parentUrls.indexOf(url) == -1){
-								pendingUrls[i].parentUrls.push(url);
+					//Check if already visited
+					for(var i = 0; i < visitedUrls.length; i++) {
+						if(newUrl == visitedUrls[i].url
+							|| (visitedUrls[i].url).indexOf(newUrl + " - Screenshot not taken HTTP Status = ") > -1 
+							|| (visitedUrls[i].url).indexOf("Flagged Bad Url - " + newUrl) > -1 
+							) { 
+							wasVisited = true;
+							if(visitedUrls[i].parentUrls.indexOf(url) == -1){
+								visitedUrls[i].parentUrls.push(url);
 							}
 							break;
 						}
 					}
-				}
 
-				if(!wasVisited && !isPending){
-					pendingUrls.push({
-					url: newUrl,
-					parentUrls: [ url ]
-				});
+
+					//Check if url is pending
+					if(!wasVisited) {
+						for(var i = 0; i < pendingUrls.length; i++) {
+							if(newUrl == pendingUrls[i].url) {
+								isPending = true;
+								if(pendingUrls[i].parentUrls.indexOf(url) == -1){
+									pendingUrls[i].parentUrls.push(url);
+								}
+								break;
+							}
+						}
+					}
+
+					if(!wasVisited && !isPending){
+						pendingUrls.push({
+							url: newUrl,
+							parentUrls: [ url ]
+						});
+					}
 				}
-			}
-		});
+			}); // endforeach 
 		}
-		// If there are URLs to be processed
-		if (pendingUrls.length > 0) {
-			var nextUrl = pendingUrls.shift();
-			//this.echo(this.colorizer.format('<- Popped ' + nextUrl + ' from the stack', { fg: 'blue' }));
-			spider(nextUrl, urlChecker, tasks);
-		} else {
-			return;
-		}
+	
 	});
+} ////////////////////////// end check blacklist 
+casper.then(function() {
+	// If there are URLs to be processed
+	if (pendingUrls.length > 0) {
+		var nextUrl = pendingUrls.shift();
+		//this.echo(this.colorizer.format('<- Popped ' + nextUrl + ' from the stack', { fg: 'blue' }));
+		spider(nextUrl, urlChecker, tasks);
+	} else {
+		return;
+	}
+	});
+	
 }
 
 
