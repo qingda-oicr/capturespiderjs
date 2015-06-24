@@ -68,15 +68,25 @@ function spider(urlObj, urlChecker, tasks) {
 
 	// Open the URL
 	casper.open(url);
+	// wait for it to open 
+	// png/jpeg/jpg/gif/pdf, wait for it 
+	var fileUrl = /\/[^\/]*\.(png|jpeg|jpg|gif|pdf)$\/?/; 
+
+	if(fileUrl.test(url)) {
+		casper.waitForResource(/.*\.(png|jpeg|jpg|gif|pdf)$/, function() {
+    		this.echo(url.match(fileUrl)[0] + ' has been loaded');
+		});
+	}
 
 	casper.eachThen(tasks, function(response) {
+		console.log("pre-response"); 
 		response.data(this, urlObj);
+		console.log("post-response");
 	});
 
 /////////////////////////////////// skip if on blacklist 
 if(Blacklist.patternMatch(url, Blacklist.blacklistArr)) {
 	casper.then(function() {	// pretty message 
-		//console.log("Skip: " + url); 
 		var statusStyle = { fg: 'blue', bold: true }; 
 		urlObj.status = "Skip"; 
 		this.echo(this.colorizer.format(urlObj.status, statusStyle) + ' ' + url);
@@ -135,10 +145,6 @@ else {
 				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
 					links.push(e.getAttribute('src'));
 				});
-
-				/*for each (link in links)
-					console.log("Under " + url + ": " + link); 
-				}*/
 				return links;
 			});
 

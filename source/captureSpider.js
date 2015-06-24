@@ -34,7 +34,6 @@ for (var i = 0; i < ignore.length; i++) {
 //////////////////////////////////// New Variables
 //var blacklist = /neopets/; 
 var retake = opts.retake || false;  //retake the screenshot if it doesn't exist
-var incSkipped = opts.incSkipped || false; // include skipped urls in visitedUrls
 /////////////////////////////////////
 
 var startNode;
@@ -48,6 +47,7 @@ if(node == true){
 
 ///////////////////////////////////////////////////////////// 
 function screenshot_save_location(view, destination) {
+	console.log(view.getCurrentUrl()); 
 	var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
 	return destination + '/' + encodeURIComponent(fileName) + ".jpg";
 }
@@ -56,9 +56,7 @@ function screenshot_save_location(view, destination) {
 // ****************************************************** //
 // Screenshot capturing function
 function screenshot(view, location, width, height) {
-	/*var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
-	var location = destination + '/' + encodeURIComponent(fileName) + ".jpg";*/
-	
+
 	// Making the page background white instead of transparent
 	view.evaluate(function() {
 	  var style = document.createElement('style'),
@@ -94,29 +92,31 @@ casper.then(function(){
 					limitingRegex || host,
 					[
 						function(view, urlObj) {
+							var save_location = screenshot_save_location(view, folderName);
+							var save_location_file_exists = false; 
+							console.log(save_location);
 							if(ignore.indexOf(casper.status().currentHTTPStatus) == -1 ){
-								console.log("\n");
-								if(Blacklist.patternMatch(url, Blacklist.blacklistArr)) {	// skips screenshot capture 
-									urlObj.screenshot = "[not taken]"; 
-								} else {	
-
-									// check if file exists 
-									var save_location = screenshot_save_location(view, folderName);
-									var save_location_file_exists = false;
-									if(fs.exists(save_location)) {
-										console.log("! " + save_location + " already exists!!");
-										save_location_file_exists = true; 
-									}
-									// if I want to retake or I don't want to retake and the file does nto exist, take the screeshot
-									if (retake || (!retake && !save_location_file_exists)) {
-										console.log("screenshot taken"); 
-									    var url_location = screenshot(view, save_location, width, height);
-									    urlObj.screenshot = url_location;	
-									} 
-									else {
-										urlObj.screenshot = save_location; 
-									}
+								// check if file exists
+								if(fs.exists(save_location)) {
+									save_location_file_exists = true; 
 								}
+								// on blacklist - skip screenshot 
+								if (Blacklist.patternMatch(url, Blacklist.blacklistArr)) {	
+									urlObj.screenshot = "[not taken]"; 
+								} 
+								// do not retake 
+								else if(!retake && save_location_file_exists) {
+
+									if(verbose) { console.log(" -- Skipshot " + save_location); } 
+									urlObj.screenshot = save_location; 
+								}
+								// retake or take 
+								else {
+									var url_location = screenshot(view, save_location, width, height);
+									urlObj.screenshot = url_location;
+								}
+								save_location = screenshot_save_location(view, folderName);
+								console.log("2: " + save_location);
 							}
 					  	}
 					]
@@ -140,5 +140,5 @@ casper.then(function() {
 		if(results.skippedUrls) fs.write(folderName + '/skippedUrls.tsv', csv.stringify(results.skippedUrls), 'w');
 	}
 });
-
+console.log("End");
 casper.run();

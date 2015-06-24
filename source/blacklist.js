@@ -2,7 +2,7 @@
 // Array of regex to check within the site url 
 
 var blacklistArr = new Array (
-	/neopets/i, 
+	/*/neopets/i, */
 	/something/i, 
 	/spadr/i, 
 	/IMAGES/
