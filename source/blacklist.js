@@ -5,7 +5,8 @@ var blacklistArr = new Array (
 	/*/neopets/i, */
 	/something/i, 
 	/spadr/i, 
-	/IMAGES/
+	/IMAGES/, 
+	/members\/?$/	// http://gadig.dweb2.res.oicr.on.ca/members contains too many links  
 );
 
 // patternMatch: String Array -> Boolean 

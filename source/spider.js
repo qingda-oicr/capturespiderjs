@@ -73,15 +73,19 @@ function spider(urlObj, urlChecker, tasks) {
 	var fileUrl = /\/[^\/]*\.(png|jpeg|jpg|gif|pdf)$\/?/; 
 
 	if(fileUrl.test(url)) {
-		casper.waitForResource(/.*\.(png|jpeg|jpg|gif|pdf)$/, function() {
-    		this.echo(url.match(fileUrl)[0] + ' has been loaded');
-		});
+		casper.waitForResource(/.*\.(png|jpeg|jpg|gif|pdf)$/, 
+		function() {
+			this.echo(this.colorizer.format(url.match(fileUrl)[0] + ' has been fully loaded: ', { fg: 'orange' }));
+		}, 
+		function() {
+			this.echo(this.colorizer.format('File took too long to load: ', { fg: 'green' }));
+		}, 10000); // 10 seconds
 	}
 
 	casper.eachThen(tasks, function(response) {
-		console.log("pre-response"); 
+		//console.log("pre-response"); 
 		response.data(this, urlObj);
-		console.log("post-response");
+		//console.log("post-response");
 	});
 
 /////////////////////////////////// skip if on blacklist 

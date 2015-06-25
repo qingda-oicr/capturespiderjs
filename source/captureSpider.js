@@ -32,7 +32,6 @@ for (var i = 0; i < ignore.length; i++) {
 };
 
 //////////////////////////////////// New Variables
-//var blacklist = /neopets/; 
 var retake = opts.retake || false;  //retake the screenshot if it doesn't exist
 /////////////////////////////////////
 
@@ -47,13 +46,12 @@ if(node == true){
 
 ///////////////////////////////////////////////////////////// 
 function screenshot_save_location(view, destination) {
-	console.log(view.getCurrentUrl()); 
+	//console.log(view.getCurrentUrl()); 
 	var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
 	return destination + '/' + encodeURIComponent(fileName) + ".jpg";
 }
 /////////////////////////////////////////////////////////////
 
-// ****************************************************** //
 // Screenshot capturing function
 function screenshot(view, location, width, height) {
 
@@ -94,7 +92,7 @@ casper.then(function(){
 						function(view, urlObj) {
 							var save_location = screenshot_save_location(view, folderName);
 							var save_location_file_exists = false; 
-							console.log(save_location);
+							//console.log(save_location);
 							if(ignore.indexOf(casper.status().currentHTTPStatus) == -1 ){
 								// check if file exists
 								if(fs.exists(save_location)) {
@@ -106,7 +104,6 @@ casper.then(function(){
 								} 
 								// do not retake 
 								else if(!retake && save_location_file_exists) {
-
 									if(verbose) { console.log(" -- Skipshot " + save_location); } 
 									urlObj.screenshot = save_location; 
 								}
@@ -115,8 +112,6 @@ casper.then(function(){
 									var url_location = screenshot(view, save_location, width, height);
 									urlObj.screenshot = url_location;
 								}
-								save_location = screenshot_save_location(view, folderName);
-								console.log("2: " + save_location);
 							}
 					  	}
 					]
@@ -140,5 +135,5 @@ casper.then(function() {
 		if(results.skippedUrls) fs.write(folderName + '/skippedUrls.tsv', csv.stringify(results.skippedUrls), 'w');
 	}
 });
-console.log("End");
+//console.log("End");
 casper.run();
