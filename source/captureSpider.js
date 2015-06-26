@@ -45,16 +45,18 @@ if(node == true){
 }
 
 ///////////////////////////////////////////////////////////// 
-function screenshot_save_location(view, destination) {
+function screenshot_save_location(view, urlObj, destination) {
 	//console.log(view.getCurrentUrl()); 
-	var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
+	//var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
+//	console.log(urlObj.url); 
+	var fileName = urlObj.url.replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
 	return destination + '/' + encodeURIComponent(fileName) + ".jpg";
 }
 /////////////////////////////////////////////////////////////
 
 // Screenshot capturing function
-function screenshot(view, location, width, height) {
-
+function screenshot(view, location, width, height, urlObj) {
+	
 	// Making the page background white instead of transparent
 	view.evaluate(function() {
 	  var style = document.createElement('style'),
@@ -64,13 +66,20 @@ function screenshot(view, location, width, height) {
 	  document.head.insertBefore(style, document.head.firstChild);
 	});
 
+	casper.thenOpen(urlObj.url, function() {
+	    this.capture(location, undefined, {
+	    	format: 'jpg', 
+	    	quality: 60
+	    });
+	});
 	// Capture
+	/*
 	view.viewport(width, height, function() {
 		view.capture(location , undefined, {
 			format: 'jpg',
 			quality: 60
 		});
-	});
+	});*/
 	return location;
 }
 
@@ -90,7 +99,8 @@ casper.then(function(){
 					limitingRegex || host,
 					[
 						function(view, urlObj) {
-							var save_location = screenshot_save_location(view, folderName);
+							casper.open(urlObj.url);
+							var save_location = screenshot_save_location(view, urlObj, folderName);
 							var save_location_file_exists = false; 
 							//console.log(save_location);
 							if(ignore.indexOf(casper.status().currentHTTPStatus) == -1 ){
@@ -98,10 +108,14 @@ casper.then(function(){
 								if(fs.exists(save_location)) {
 									save_location_file_exists = true; 
 								}
+
 								// on blacklist - skip screenshot 
-								if (Blacklist.patternMatch(url, Blacklist.blacklistArr)) {	
+								if (Blacklist.patternMatch(urlObj.url, Blacklist.blacklistArr)) {	
 									urlObj.screenshot = "[not taken]"; 
 								} 
+								else if (Blacklist.bigFileUrl.test(urlObj.url)) {
+									// don't screenshot pdf because it won't be correct 
+								}
 								// do not retake 
 								else if(!retake && save_location_file_exists) {
 									if(verbose) { console.log(" -- Skipshot " + save_location); } 
@@ -109,7 +123,7 @@ casper.then(function(){
 								}
 								// retake or take 
 								else {
-									var url_location = screenshot(view, save_location, width, height);
+									var url_location = screenshot(view, save_location, width, height, urlObj);
 									urlObj.screenshot = url_location;
 								}
 							}

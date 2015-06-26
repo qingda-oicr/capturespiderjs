@@ -50,6 +50,7 @@ function checkWithGoogle(url){
 var visitedUrls = [];
 var pendingUrls = [];
 var skippedUrls = []; 
+var count = 0; 
 
 // Spider from the given URL
 // spider(Object urlObj, fn urlChecker(Str url)[, Nat cap, Arr (Object urlObj), Arr (Object urlObj))])
@@ -63,22 +64,40 @@ function spider(urlObj, urlChecker, tasks) {
 	else if(cap > 0){
 		cap--;
 	}
+	++count; 
 
 	url = urlObj.url;
+	//console.log("#### " + url);
 
-	// Open the URL
+
+/////////////////////////////////// skip if on blacklist 
+if(Blacklist.patternMatch(url, Blacklist.blacklistArr)) {
+	casper.then(function() {	// pretty message 
+		var statusStyle = { fg: 'blue', bold: true }; 
+		urlObj.status = "Skip"; 
+		this.echo(count + '\t' + "|" + visitedUrls.length + "|" + pendingUrls.length + "|" + skippedUrls.length + "|\t" + this.colorizer.format(urlObj.status, statusStyle) + '\t ' + url);
+		skippedUrls.push(urlObj);
+	});
+}
+else { 
+		// Open the URL
+	//console.log("Opening: " + url)
 	casper.open(url);
-	// wait for it to open 
-	// png/jpeg/jpg/gif/pdf, wait for it 
-	var fileUrl = /\/[^\/]*\.(png|jpeg|jpg|gif|pdf)$\/?/; 
+	//console.log("Opened " + url); 
+		/////////////////////////////////////////////////////////////////////////////
 
-	if(fileUrl.test(url)) {
+	if(Blacklist.bigFileUrl.test(url)) {
+			urlObj.screenshot = "no image"; 
+	}
+
+	if(Blacklist.fileUrl.test(url)) {
 		casper.waitForResource(/.*\.(png|jpeg|jpg|gif|pdf)$/, 
 		function() {
-			this.echo(this.colorizer.format(url.match(fileUrl)[0] + ' has been fully loaded: ', { fg: 'orange' }));
+			//this.echo(this.colorizer.format(url.match(fileUrl)[0] + ' has been fully loaded: ', { fg: 'orange' }));
 		}, 
 		function() {
-			this.echo(this.colorizer.format('File took too long to load: ', { fg: 'green' }));
+			this.echo(this.colorizer.format('File took too long to load: ', { fg: 'red' }));
+			urlObj.screenshot = "took too long to load"; 
 		}, 10000); // 10 seconds
 	}
 
@@ -87,17 +106,7 @@ function spider(urlObj, urlChecker, tasks) {
 		response.data(this, urlObj);
 		//console.log("post-response");
 	});
-
-/////////////////////////////////// skip if on blacklist 
-if(Blacklist.patternMatch(url, Blacklist.blacklistArr)) {
-	casper.then(function() {	// pretty message 
-		var statusStyle = { fg: 'blue', bold: true }; 
-		urlObj.status = "Skip"; 
-		this.echo(this.colorizer.format(urlObj.status, statusStyle) + ' ' + url);
-		skippedUrls.push(urlObj);
-	});
-}
-else { 
+	/////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////
 	// check status, echo status, scan for links on the page
 	casper.then(function() {
@@ -109,6 +118,7 @@ else {
 		}
 		// Set the status style based on server status code
 		var status = this.status().currentHTTPStatus;
+		//console.log(status); 
 		if( status == null)
 			status = 404;
 		// Checks HTTP Status if certain HTTP codes are to be ignored
@@ -124,10 +134,8 @@ else {
 			default: var statusStyle = { fg: 'magenta', bold: true }; break;
 		}
 		// Display the spidered URL and status
-		this.echo(this.colorizer.format(status, statusStyle) + ' ' + url);
+		this.echo(count + '\t' + "|" + visitedUrls.length + "|" + pendingUrls.length + "|" + skippedUrls.length + "|\t" + this.colorizer.format(status, statusStyle) + ' ' + url);
 		urlObj.status = status;
-
-
 
 		// Only adds nodes to the queue if node-only mode is enabled
 		if(node == true){
@@ -138,7 +146,9 @@ else {
 				startNode++;
 			pendingUrls.push(nodeUrl);
 		}
-
+		else if(Blacklist.bigFileUrl.test(url)) {
+			// don't look for links 
+		}
 		else{
 			// Find links present on this page (node only mode is off)
 			var links = this.evaluate(function() {
