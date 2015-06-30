@@ -24,8 +24,10 @@ var blacklistArr = new Array (
 	/\/tsv\//, 		// /tsv/ 
 	/\/tool\//, 	// /tool/ 
 
+	/.*rss\.xml\/?$/,	// rss.xml
+
 	/.*\.mp4\/?$/, 	// ...anything.mp4 
-	/.*\.zip\/?$/, 	// ...anything.zip 
+	///.*\.zip\/?$/, 	// ...anything.zip 
 
 
 
@@ -50,7 +52,7 @@ function patternMatch(url, patternArr) {
 // wait for it to open 
 // png/jpeg/jpg/gif/pdf, wait for it 
 var fileUrl = /\/[^\/]*\.(png|jpeg|jpg|gif|pdf)\/?$/; 
-var bigFileUrl = /\.(pdf)\/?$/; 
+var bigFileUrl = /\.(pdf|zip)\/?$/; 
 
 exports.patternMatch = patternMatch;
 exports.blacklistArr = blacklistArr;

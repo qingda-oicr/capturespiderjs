@@ -47,16 +47,19 @@ if(node == true){
 ///////////////////////////////////////////////////////////// 
 function screenshot_save_location(view, urlObj, destination) {
 	//console.log(view.getCurrentUrl()); 
-	//var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
+	var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
 //	console.log(urlObj.url); 
-	var fileName = urlObj.url.replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
-	return destination + '/' + encodeURIComponent(fileName) + ".jpg";
+	//var fileName = urlObj.url.replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
+	return destination + '/' + encodeURIComponent(fileName) + ".png";
 }
 /////////////////////////////////////////////////////////////
 
 // Screenshot capturing function
 function screenshot(view, location, width, height, urlObj) {
-	
+	view.evaluate(function() {
+    	document.body.bgColor = 'white';
+	});
+
 	// Making the page background white instead of transparent
 	view.evaluate(function() {
 	  var style = document.createElement('style'),
@@ -66,20 +69,20 @@ function screenshot(view, location, width, height, urlObj) {
 	  document.head.insertBefore(style, document.head.firstChild);
 	});
 
-	casper.thenOpen(urlObj.url, function() {
+	/*casper.thenOpen(urlObj.url, function() {
 	    this.capture(location, undefined, {
 	    	format: 'jpg', 
 	    	quality: 60
 	    });
-	});
+	});*/
 	// Capture
-	/*
+	
 	view.viewport(width, height, function() {
 		view.capture(location , undefined, {
-			format: 'jpg',
+			format: 'png',
 			quality: 60
 		});
-	});*/
+	});
 	return location;
 }
 

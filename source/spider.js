@@ -100,6 +100,7 @@ else {
 			urlObj.screenshot = "took too long to load"; 
 		}, 10000); // 10 seconds
 	}
+	
 
 	casper.eachThen(tasks, function(response) {
 		//console.log("pre-response"); 
@@ -153,9 +154,9 @@ else {
 			// Find links present on this page (node only mode is off)
 			var links = this.evaluate(function() {
 				var links = [];
-				Array.prototype.forEach.call(__utils__.findAll('a'), function(e) {
+				/*Array.prototype.forEach.call(__utils__.findAll('a'), function(e) {
 					links.push(e.getAttribute('href'));
-				});
+				});*/
 				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
 					links.push(e.getAttribute('src'));
 				});
