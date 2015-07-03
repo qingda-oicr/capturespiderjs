@@ -154,9 +154,9 @@ else {
 			// Find links present on this page (node only mode is off)
 			var links = this.evaluate(function() {
 				var links = [];
-				/*Array.prototype.forEach.call(__utils__.findAll('a'), function(e) {
+				Array.prototype.forEach.call(__utils__.findAll('a'), function(e) {
 					links.push(e.getAttribute('href'));
-				});*/
+				});
 				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
 					links.push(e.getAttribute('src'));
 				});
