@@ -4,11 +4,6 @@
 var blacklistArr = new Array (
 	///////////////////////// test 
 	///neopets/i, 
-	/*/oicr-programs/, 
-	/about-oicr/, 
-	/events/, 
-	/education/, 
-	/careers/, */
 
 ///// GA 
 	/\/members\/?$/,	// http://gadig.dweb2.res.oicr.on.ca/members contains too many links  

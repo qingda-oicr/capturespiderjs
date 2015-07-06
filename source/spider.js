@@ -5,7 +5,6 @@ var require = patchRequire(require);
 var utils = require('utils');
 var helpers = require('./helpers');
 var googlePassed;
-//var Blacklist = require('./blacklist'); 
 
 //discovers soft 404's through a google search
 function checkWithGoogle(url){
@@ -71,7 +70,7 @@ function spider(urlObj, urlChecker, tasks) {
 
 
 /////////////////////////////////// skip if on blacklist 
-if(Blacklist.patternMatch(url, Blacklist.blacklistArr)) {
+if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
 	casper.then(function() {	// pretty message 
 		var statusStyle = { fg: 'blue', bold: true }; 
 		urlObj.status = "Skip"; 
@@ -86,11 +85,11 @@ else {
 	//console.log("Opened " + url); 
 		/////////////////////////////////////////////////////////////////////////////
 
-	if(Blacklist.bigFileUrl.test(url)) {
+	if(Patterns.bigFileUrl.test(url)) {
 			urlObj.screenshot = "no image"; 
 	}
 
-	if(Blacklist.fileUrl.test(url)) {
+	if(Patterns.fileUrl.test(url)) {
 		casper.waitForResource(/.*\.(png|jpeg|jpg|gif|pdf)$/, 
 		function() {
 			//this.echo(this.colorizer.format(url.match(fileUrl)[0] + ' has been fully loaded: ', { fg: 'orange' }));
@@ -147,7 +146,7 @@ else {
 				startNode++;
 			pendingUrls.push(nodeUrl);
 		}
-		else if(Blacklist.bigFileUrl.test(url)) {
+		else if(Patterns.bigFileUrl.test(url)) {
 			// don't look for links 
 		}
 		else{
