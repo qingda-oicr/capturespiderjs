@@ -159,6 +159,9 @@ else {
 				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
 					links.push(e.getAttribute('src'));
 				});
+				Array.prototype.forEach.call(__utils__.findAll('area'), function(e) {
+					links.push(e.getAttribute('href'));
+				});
 				return links;
 			});
 
