@@ -2,7 +2,7 @@
 // Array of regex to check within the site url 
 
 var blacklistArr = new Array (
-	///////////////////////// test 
+	///////////////////////// testing regexs
 	///neopets/i, 
 
 ///// GA 
@@ -24,6 +24,16 @@ var blacklistArr = new Array (
 	/.*\.mp4\/?$/, 	// ...anything.mp4 
 	///.*\.zip\/?$/, 	// ...anything.zip 
 
+	/\/mica\/studies\/?$/, 	// https://www.maelstrom-research.org/mica/studies
+	/\/mica\/study\//, 		// https://www.maelstrom-research.org/mica/study/*
+
+	///http(s)?:\/\/.*\.oicr\.on\.ca/, 	// when scanning oicr.on.ca, skip XXX.oicr.on.ca
+
+	/\/(devel|book)$/, // gdc d7 
+
+	// facitdev - block drupal menu 
+	/(\/sites\/)|(\/modules\/)|(\/admin\/)|(\/node\/add)|(\/toolbar\/)/, 
+	/\/facitdev.res.oicr.on.ca\/dashboard\/user/, 
 
 
 	/exampleregex/

@@ -33,6 +33,7 @@ for (var i = 0; i < ignore.length; i++) {
 
 //////////////////////////////////// New Variables
 var retake = opts.retake || false;  //retake the screenshot if it doesn't exist
+var parentPerLine = opts.parentPerLine || false; 
 /////////////////////////////////////
 
 var startNode;
@@ -147,14 +148,14 @@ casper.then(function() {
 	casper.echo("Crawled " + results.count + " links, taking "
 		+ elapsedTime + ". (~"
 			+ results.count/(results.elapsedTime/1000) + " seconds per link)");
-	
+	//console.log(csv.stringify(results.visitedUrls, parentPerLine));
 	// Outputting results
 	if(resultFormat == 'json') {
-		fs.write(folderName + '/visitedUrls.json', JSON.stringify(results.visitedUrls), 'w');
+		fs.write(folderName + '/visitedUrls.json', JSON.stringify(results.visitedUrls, parentPerLine), 'w');
 		if(results.pendingUrls) fs.write(folderName + '/pendingUrls.json', JSON.stringify(results.pendingUrls), 'w');
 		if(results.skippedUrls) fs.write(folderName + '/skippedUrls.json', JSON.stringify(results.skippedUrls), 'w');
 	} else {
-		fs.write(folderName + '/visitedUrls.tsv', csv.stringify(results.visitedUrls), 'w');
+		fs.write(folderName + '/visitedUrls.tsv', csv.stringify(results.visitedUrls, parentPerLine), 'w');
 		if(results.pendingUrls) fs.write(folderName + '/pendingUrls.tsv', csv.stringify(results.pendingUrls), 'w');
 		if(results.skippedUrls) fs.write(folderName + '/skippedUrls.tsv', csv.stringify(results.skippedUrls), 'w');
 	}

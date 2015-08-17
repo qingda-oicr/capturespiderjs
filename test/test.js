@@ -29,11 +29,18 @@ function patternMatch(url, patternArr) {
 			console.log("  $$" + blacklist[i] + "$$" + " is not in " + url);
 		}
 	}
+
+	console.log(('http://www.sanzoid.com').replace(/^http(s)?:\/\//, '')); 
+	console.log(('https://www.sanzoid.com').replace(/^http(s)?:\/\//, '')); 
+	console.log(('ahttps://www.sanzoid.com').replace(/^http(s)?:\/\//, '')); 
 }
 
 patternMatch('http://www.sanzoid.com/neopets.php', blacklist); 
 patternMatch('http://www.sanzoid.com/nepets.php', blacklist); 
 patternMatch('http://www.sanzoid.com/something.php', blacklist); 
+
+
+
 
 ///////////////////////////////////////////////////////////////////////
 // regex testing 
@@ -66,14 +73,44 @@ if( pattern2.test(text2) ) {
 
 //////////////////////////////////////////////////////////////
 // example casperjs code
-console.log("\n===================================="); 
+/*console.log("\n===================================="); 
 casper.start('http://casperjs.org/', function() {
     this.echo(this.getTitle());
 });
 
+
+
 casper.thenOpen('http://phantomjs.org', function() {
     this.echo(this.getTitle());
 });
-
+*/
 //////////////////////////////////////////////////////////////
+
+/////////////////////// login code //////////////////////////////////////////////
+var url= 'http://facitdev.res.oicr.on.ca/dashboard/';
+
+casper.start(url, function() {
+	console.log('///////////////////////////////////////');
+   // search for 'casperjs' from google form
+   console.log("page loaded");
+   //this.test.assertExists('#user-login-form', 'form is found');
+   this.fill('form#user-login-form', { 
+        name: 'joseph', 
+        pass:  'Password123'
+    }, true);
+   console.log("login success");
+});
+
+casper.then(function() {
+	this.evaluate(function () {
+		$('form#user-login-form').submit(); 
+	});
+});
+
+casper.then(function() {
+	this.echo(this.getTitle());
+});
+
+/////////////////////// login code end //////////////////////////////////////////////
+
 casper.run();

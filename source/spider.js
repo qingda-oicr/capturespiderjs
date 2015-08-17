@@ -50,6 +50,7 @@ var visitedUrls = [];
 var pendingUrls = [];
 var skippedUrls = []; 
 var count = 0; 
+var altTextUrls = [];
 
 // Spider from the given URL
 // spider(Object urlObj, fn urlChecker(Str url)[, Nat cap, Arr (Object urlObj), Arr (Object urlObj))])
@@ -84,6 +85,19 @@ else {
 	casper.open(url);
 	//console.log("Opened " + url); 
 		/////////////////////////////////////////////////////////////////////////////
+
+	/////////////////////////////////// log in - ids and names will have to change 
+	casper.then(function() { 
+		// form#user-login-form will be different for every site
+		if(this.exists('form#user-login-form')) {
+			this.fill('form#user-login-form', { 
+	        name: 'joseph', 	// name="name"
+	        pass:  'Password123'	// name="pass"
+		    }, true);
+			console.log("logged in");
+		}
+	}); 
+	////////////////////////////////// log in end 
 
 	if(Patterns.bigFileUrl.test(url)) {
 			urlObj.screenshot = "no image"; 
@@ -164,6 +178,34 @@ else {
 				});
 				return links;
 			});
+			///////////////////////////////////////////////////////////////////////////////////////////////
+			// find elements with alt tags. 
+			// if no alt tag, then status = 0000 
+			// if alt tag is empty, then status = 0000 
+			// else, alt tag is good. 
+			// maybe only add it to the array if the alt tags are missing. If the alt tag is empty or if it doesn't exist, then add the source to the array and output that. 
+			// only add it to altTextUrls if and only if the alt tag is empty. 
+			// For that page, go through all alt tags. If empty, create an object and add it to the array. 
+
+/*
+			var altTexts = this.evaluate(function() {
+				var altTexts = [];
+				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
+					//altTexts.push(e.getAttribute('alt'));
+					console.log("alt: " + e.getAttribute('alt'));
+					if(!e.getAttribute('alt') || e.getAttribute('alt') == "") {	// if no alt tag or empty  
+						var source = e.getAttribute('src'); 
+						console.log("source: " + source); 
+						// altTextElement.source = source;
+						// altTextElement.url = url; 
+					}
+				});
+
+				return altTexts;
+			});
+*/
+
+			//////////////////////////////////////////////////////////////////////////////////////////////
 
 			// Add newly found URLs to the stack
 			var baseUrl = this.getGlobal('location').href;
@@ -184,7 +226,7 @@ else {
 
 					//Check if already visited
 					for(var i = 0; i < visitedUrls.length; i++) {
-						if(newUrl == visitedUrls[i].url
+						if(newUrl.replace(/^http(s)?:\/\//, '') == visitedUrls[i].url.replace(/^http(s)?:\/\//, '')
 							|| (visitedUrls[i].url).indexOf(newUrl + " - Screenshot not taken HTTP Status = ") > -1 
 							|| (visitedUrls[i].url).indexOf("Flagged Bad Url - " + newUrl) > -1 
 							) { 
@@ -204,7 +246,7 @@ else {
 					//Check if url is pending
 					if(!wasVisited || !wasSkipped) {
 						for(var i = 0; i < pendingUrls.length; i++) {
-							if(newUrl == pendingUrls[i].url) {
+							if(newUrl.replace(/^http(s)?:\/\//, '') == pendingUrls[i].url.replace(/^http(s)?:\/\//, '')) {
 								isPending = true;
 								if(pendingUrls[i].parentUrls.indexOf(url) == -1){
 									pendingUrls[i].parentUrls.push(url);
@@ -247,6 +289,11 @@ exports.spider = function(url, limitingRegex, tasks) {
 	var urlObj = { url:url,
 				   parentUrls:[url], 
 					};
+	/*var altTextObj = {
+		status:"0000", 
+		element:"no", 
+		pageUrl:"X"
+	}*/
 
 	//Determining if "limitingRegex" is a simple string or a RegularExpression
 	if(limitingRegex[0]) { //i.e. limitingRegex is a string
