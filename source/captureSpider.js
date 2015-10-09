@@ -5,11 +5,12 @@ var csv = require('./csv');
 var fs = require('fs');
 var Patterns = require('./patterns'); 
 
-
 // Handling CLI paramters and options
 var args = casper.cli.args;
 var opts = casper.cli.options;
 
+var username = opts.u || false;
+var password; 
 
 var startUrl = String(args.slice(-1));
 var limitingRegex = opts.regex;
@@ -44,6 +45,16 @@ if(node == true){
 	tempArray.splice(tempArray.length - 1, 1);
 	startUrl = tempArray.join('/');
 }
+
+//////////////////////////////////////////////////////////////
+//get user password if applicable
+function getPassword() {
+	var system = require('system');
+	system.stdout.write('Password: ');
+	var line = system.stdin.readLine();
+	return line;
+}
+/////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////// 
 function screenshot_save_location(view, urlObj, destination) {
@@ -96,6 +107,9 @@ casper.start(startUrl, function() {
 	if(verbose) {
 		casper.echo("Host: " + host);
 		casper.echo("folderName: " + folderName);
+	}
+	if(username) {
+		password = getPassword();
 	}
 });
 var results = {};

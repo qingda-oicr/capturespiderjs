@@ -87,14 +87,18 @@ else {
 		/////////////////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////// log in - ids and names will have to change 
-	casper.then(function() { 
-		// form#user-login-form will be different for every site
-		if(this.exists('form#user-login-form')) {
-			this.fill('form#user-login-form', { 
-	        name: 'joseph', 	// name="name"
-	        pass:  'Password123'	// name="pass"
-		    }, true);
-			console.log("logged in");
+	casper.then(function() {
+		var formArr = ['form#user-login', 'form#loginform', 'form#login-form', 'form#user-login-form']; // add form names here
+		for(var i = 0; i < formArr.length; i++) {
+			if(this.exists(formArr[i])) {
+				//console.log("filling form....");
+				this.fill(formArr[i], { 
+	              name: username, 	// name="name", different for every site
+	              pass:  password	// name="pass", different for every site
+		        }, true);
+				//console.log("logged in");
+				break;
+			} 
 		}
 	}); 
 	////////////////////////////////// log in end 
