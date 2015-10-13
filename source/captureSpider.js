@@ -9,8 +9,11 @@ var Patterns = require('./patterns');
 var args = casper.cli.args;
 var opts = casper.cli.options;
 
-var username = opts.u || false;
+var username = opts.user || false;
 var password; 
+
+var auth = opts.auth || false;
+var auth_password;
 
 var startUrl = String(args.slice(-1));
 var limitingRegex = opts.regex;
@@ -111,8 +114,13 @@ casper.start(startUrl, function() {
 	if(username) {
 		password = getPassword();
 	}
+	if(auth) {
+		auth_password = getPassword();
+		casper.setHttpAuth(auth, auth_password);
+	}
 });
 var results = {};
+
 casper.then(function(){
 	results = Spider.spider(startUrl,  
 					limitingRegex || host,
