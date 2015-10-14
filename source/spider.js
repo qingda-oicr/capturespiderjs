@@ -103,20 +103,20 @@ else {
 	}); 
 	////////////////////////////////// log in end 
 
-	if(Patterns.bigFileUrl.test(url)) {
-			urlObj.screenshot = "no image"; 
-	}
+	// if(Patterns.bigFileUrl.test(url)) {
+	// 		urlObj.screenshot = "no image"; 
+	// }
 
-	if(Patterns.fileUrl.test(url)) {
-		casper.waitForResource(/.*\.(png|jpeg|jpg|gif|pdf)$/, 
-		function() {
-			//this.echo(this.colorizer.format(url.match(fileUrl)[0] + ' has been fully loaded: ', { fg: 'orange' }));
-		}, 
-		function() {
-			this.echo(this.colorizer.format('File took too long to load: ', { fg: 'red' }));
-			urlObj.screenshot = "took too long to load"; 
-		}, 10000); // 10 seconds
-	}
+	// if(Patterns.fileUrl.test(url)) {
+	// 	casper.waitForResource(/.*\.(png|jpeg|jpg|gif|pdf)$/, 
+	// 	function() {
+	// 		//this.echo(this.colorizer.format(url.match(fileUrl)[0] + ' has been fully loaded: ', { fg: 'orange' }));
+	// 	}, 
+	// 	function() {
+	// 		this.echo(this.colorizer.format('File took too long to load: ', { fg: 'red' }));
+	// 		urlObj.screenshot = "took too long to load"; 
+	// 	}, 10000); // 10 seconds
+	// }
 	
 
 	casper.eachThen(tasks, function(response) {
@@ -164,8 +164,8 @@ else {
 				startNode++;
 			pendingUrls.push(nodeUrl);
 		}
-		else if(Patterns.bigFileUrl.test(url)) {
-			// don't look for links 
+		else if(Patterns.patternMatch(urlObj.url, Patterns.bigFileArr)) {
+		 	// don't look for links 
 		}
 		else{
 			// Find links present on this page (node only mode is off)
@@ -175,13 +175,14 @@ else {
 					links.push(e.getAttribute('href'));
 				});
 				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
-					links.push(e.getAttribute('src'));
+			 		links.push(e.getAttribute('src'));
 				});
 				Array.prototype.forEach.call(__utils__.findAll('area'), function(e) {
-					links.push(e.getAttribute('href'));
+					links.push(e.getAttribute('href'));	
 				});
 				return links;
 			});
+
 			///////////////////////////////////////////////////////////////////////////////////////////////
 			// find elements with alt tags. 
 			// if no alt tag, then status = 0000 

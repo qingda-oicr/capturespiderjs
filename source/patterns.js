@@ -13,15 +13,15 @@ var blacklistArr = new Array (
 	/\/taxonomy/, 	// /taxonomy  
 
 	/\/tag\//, 		// /tag/ 
-	/\/xml\//, 		// /xml/ 
+	///\/xml\//, 		// /xml/ 
 	/\/json\//, 	// /json/ 
 	/\/csv\//, 		// /csv/ 
 	/\/tsv\//, 		// /tsv/ 
 	/\/tool\//, 	// /tool/ 
 
-	/.*rss\.xml\/?$/,	// rss.xml
+//	/.*rss\.xml\/?$/,	// rss.xml
 
-	/.*\.mp4\/?$/, 	// ...anything.mp4 
+	///.*\.mp4\/?$/, 	// ...anything.mp4 
 	///.*\.zip\/?$/, 	// ...anything.zip 
 
 	/\/mica\/studies\/?$/, 	// https://www.maelstrom-research.org/mica/studies
@@ -33,10 +33,15 @@ var blacklistArr = new Array (
 
 	// facitdev - block drupal menu 
 	/(\/sites\/)|(\/modules\/)|(\/admin\/)|(\/node\/add)|(\/toolbar\/)/, 
-	/\/facitdev.res.oicr.on.ca\/dashboard\/user/, 
 
 
 	/exampleregex/
+);
+
+var bigFileArr = new Array (
+ 	/.*\.mp4\/?$/, 	// ...anything.mp4 
+	/.*\.zip\/?$/, 	// ...anything.zip 
+	/.*\.pdf\/?$/ 	// ...anything.pdf 
 );
 
 // patternMatch: String Array -> Boolean 
@@ -56,11 +61,12 @@ function patternMatch(url, patternArr) {
 
 // wait for it to open 
 // png/jpeg/jpg/gif/pdf, wait for it 
-var fileUrl = /\/[^\/]*\.(png|jpeg|jpg|gif|pdf)\/?$/; 
-var bigFileUrl = /\.(pdf|zip)\/?$/; 
+//var fileUrl = /\/[^\/]*\.(png|jpeg|jpg|gif|pdf)\/?$/; 
+var bigFileUrl = /\.(pdf|zip|mp4)\/?$/; 
 
 exports.patternMatch = patternMatch;
 exports.blacklistArr = blacklistArr;
-exports.fileUrl = fileUrl; 
+//exports.fileUrl = fileUrl; 
 exports.bigFileUrl = bigFileUrl; 
+exports.bigFileArr = bigFileArr;
 
