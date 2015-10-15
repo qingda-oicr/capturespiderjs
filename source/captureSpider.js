@@ -16,6 +16,7 @@ var auth = opts.auth || false;
 var auth_password;
 
 var startUrl = String(args.slice(-1));
+
 var limitingRegex = opts.regex;
 if(limitingRegex) limitingRegex = new RegExp(limitingRegex);
 var cap = opts.cap || false;
@@ -126,7 +127,9 @@ casper.then(function(){
 					limitingRegex || host,
 					[
 						function(view, urlObj) {
-							casper.open(urlObj.url);
+							if(!Patterns.patternMatch(urlObj.url, Patterns.bigFileArr)) {
+								casper.open(urlObj.url);
+							}
 							var save_location = screenshot_save_location(view, urlObj, folderName);
 							var save_location_file_exists = false; 
 							//console.log(save_location);

@@ -8,9 +8,9 @@ var blacklistArr = new Array (
 ///// GA 
 	/\/members\/?$/,	// http://gadig.dweb2.res.oicr.on.ca/members contains too many links  
 
-	/\/category/, 	// /category 
+	///\/category/, 	// /category 
 	/\/rearrange/, 	// /rearrange 
-	/\/taxonomy/, 	// /taxonomy  
+	///\/taxonomy/, 	// /taxonomy  
 
 	/\/tag\//, 		// /tag/ 
 	///\/xml\//, 		// /xml/ 
@@ -32,7 +32,7 @@ var blacklistArr = new Array (
 	/\/(devel|book)$/, // gdc d7 
 
 	// facitdev - block drupal menu 
-	/(\/sites\/)|(\/modules\/)|(\/admin\/)|(\/node\/add)|(\/toolbar\/)/, 
+//	/(\/sites\/)|(\/modules\/)|(\/admin\/)|(\/node\/add)|(\/toolbar\/)/, 
 
 
 	/exampleregex/

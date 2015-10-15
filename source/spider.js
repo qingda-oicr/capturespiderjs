@@ -5,6 +5,26 @@ var require = patchRequire(require);
 var utils = require('utils');
 var helpers = require('./helpers');
 var googlePassed;
+var domain;
+
+// get domain
+function getDomain(url) {
+	var pos1 = 0;
+	var pos2 = 0;
+	var ct = 0;
+	for(var i = 0; i < url.length; i++) {
+		if (url[i] == '/') ct++;
+		if(ct == 2 && url[i] == '/') pos1 = i;
+		if(ct == 3 && url[i] == '/') {
+			pos2 = i;
+			return url.substr(pos1+1, pos2-pos1-1);
+		}
+        if(i == (url.length)-1 && ct == 2) {
+        	pos2 = i;
+        	return url.substr(pos1+1, pos2-pos1);
+        }
+    }  
+}
 
 //discovers soft 404's through a google search
 function checkWithGoogle(url){
@@ -56,6 +76,13 @@ var altTextUrls = [];
 // spider(Object urlObj, fn urlChecker(Str url)[, Nat cap, Arr (Object urlObj), Arr (Object urlObj))])
 function spider(urlObj, urlChecker, tasks) {
 
+	// get domain
+
+	if(count == 0) {
+		domain = getDomain(urlObj.url);
+		console.log("Domain is", domain);
+	}
+
 	// Check if cap has been reached
 
 	if(cap !== false && cap <= 0){ 
@@ -71,15 +98,18 @@ function spider(urlObj, urlChecker, tasks) {
 
 
 /////////////////////////////////// skip if on blacklist 
-if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
+if(Patterns.patternMatch(url, Patterns.blacklistArr) || Patterns.patternMatch(url, Patterns.bigFileArr)) {
 	casper.then(function() {	// pretty message 
 		var statusStyle = { fg: 'blue', bold: true }; 
 		urlObj.status = "Skip"; 
 		this.echo(count + '\t' + "|" + visitedUrls.length + "|" + pendingUrls.length + "|" + skippedUrls.length + "|\t" + this.colorizer.format(urlObj.status, statusStyle) + '\t ' + url);
 		skippedUrls.push(urlObj);
 	});
-}
-else { 
+} else if(urlObj.url.indexOf(domain) == -1) {
+
+    console.log("Skip non-domain link: ", urlObj.url); // skip non-domain links
+
+} else { 
 		// Open the URL
 	//console.log("Opening: " + url)
 	casper.open(url);
