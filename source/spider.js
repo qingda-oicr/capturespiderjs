@@ -6,30 +6,32 @@ var utils = require('utils');
 var helpers = require('./helpers');
 var googlePassed;
 var domain;
+var loggedIn = false;
 
 // get domain
 function getDomain(url) {
-	var pos1 = 0;
-	var pos2 = 0;
+	var pos = 0;
 	var ct = 0;
 	for(var i = 0; i < url.length; i++) {
 		if (url[i] == '/') ct++;
-		if(ct == 2 && url[i] == '/') pos1 = i;
 		if(ct == 3 && url[i] == '/') {
 			pos2 = i;
-			return url.substr(pos1+1, pos2-pos1-1);
+			return url.substr(0, pos2);
 		}
         if(i == (url.length)-1 && ct == 2) {
-        	pos2 = i;
-        	return url.substr(pos1+1, pos2-pos1);
+        	return url;
         }
     }  
 }
 
 //discovers soft 404's through a google search
 function checkWithGoogle(url){
-	casper.thenOpen('https://www.google.ca/search?q=' + url + '&gws_rd=ssl',function(){
-	});
+
+	if(Patterns.patternMatch(url, Patterns.bigFileArr)) {
+		casper.thenOpen('https://www.google.ca/search?q=' + url + '&gws_rd=ssl', { method: 'head' }, function(){});
+	} else {
+		casper.thenOpen('https://www.google.ca/search?q=' + url + '&gws_rd=ssl',function(){});
+ 	}
 
 	casper.then(function() {
     // Click on 1st result link
@@ -47,13 +49,22 @@ function checkWithGoogle(url){
 		google_screenshot = 'data:image/png;base64,' + this.captureBase64('png');
 	});
 
-	casper.thenOpen(url, function() {
-		expected_screenshot = 'data:image/png;base64,' + this.captureBase64('png');
-		pdiffy(google_screenshot).compareTo(expected_screenshot).onComplete(function(data){		
-		results1 = data;
-		});
+	if(Patterns.patternMatch(url, Patterns.bigFileArr)) {
+		casper.thenOpen(url, { method:'head' }, function() {
+			expected_screenshot = 'data:image/png;base64,' + this.captureBase64('png');
+			pdiffy(google_screenshot).compareTo(expected_screenshot).onComplete(function(data){		
+			results1 = data;
+			});
+	    });
+	} else {
+		casper.thenOpen(url, function() {
+			expected_screenshot = 'data:image/png;base64,' + this.captureBase64('png');
+			pdiffy(google_screenshot).compareTo(expected_screenshot).onComplete(function(data){		
+			results1 = data;
+			});
+	    });
+ 	}
 
-	});
 	// Wait for the async compareTo(...) to return and sets the return values
 	casper.waitFor(function check() {
 		return (results1!== undefined);
@@ -98,7 +109,7 @@ function spider(urlObj, urlChecker, tasks) {
 
 
 /////////////////////////////////// skip if on blacklist 
-if(Patterns.patternMatch(url, Patterns.blacklistArr) || Patterns.patternMatch(url, Patterns.bigFileArr)) {
+if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
 	casper.then(function() {	// pretty message 
 		var statusStyle = { fg: 'blue', bold: true }; 
 		urlObj.status = "Skip"; 
@@ -107,30 +118,37 @@ if(Patterns.patternMatch(url, Patterns.blacklistArr) || Patterns.patternMatch(ur
 	});
 } else if(urlObj.url.indexOf(domain) == -1) {
 
-    console.log("Skip non-domain link: ", urlObj.url); // skip non-domain links
+    console.log("Skip non-domain link: ", urlObj.url); // skip non-domain links 
 
 } else { 
-		// Open the URL
-	//console.log("Opening: " + url)
-	casper.open(url);
-	//console.log("Opened " + url); 
+
+	if(Patterns.patternMatch(url, Patterns.bigFileArr)) {
+		casper.open(url, {
+    		method: 'head' // send 'HEAD' requests for big files
+        });
+	} else {
+		casper.open(url); // send 'GET' requests for normal links
+ 	}
 		/////////////////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////// log in - ids and names will have to change 
-	casper.then(function() {
-		var formArr = ['form#user-login', 'form#loginform', 'form#login-form', 'form#user-login-form']; // add form names here
-		for(var i = 0; i < formArr.length; i++) {
-			if(this.exists(formArr[i])) {
-				//console.log("filling form....");
-				this.fill(formArr[i], { 
-	              name: username, 	// name="name", different for every site
-	              pass:  password	// name="pass", different for every site
-		        }, true);
-				//console.log("logged in");
-				break;
-			} 
-		}
-	}); 
+	if(username && !loggedIn) {
+		casper.then(function() {
+			var formArr = ['form#user-login', 'form#loginform', 'form#login-form', 'form#user-login-form']; // add form names here
+			for(var i = 0; i < formArr.length; i++) {
+				if(this.exists(formArr[i])) {
+					//console.log("filling form....");
+					this.fill(formArr[i], { 
+		              name: username, 	// name="name", different for every site
+		              pass:  password	// name="pass", different for every site
+			        }, true);
+					//console.log("logged in");
+					break;
+				} 
+			}
+			loggedIn = true;
+		}); 
+    }
 	////////////////////////////////// log in end 
 
 	// if(Patterns.bigFileUrl.test(url)) {
@@ -159,16 +177,15 @@ if(Patterns.patternMatch(url, Patterns.blacklistArr) || Patterns.patternMatch(ur
 	// check status, echo status, scan for links on the page
 	casper.then(function() {
 		if(verify){
-	//if(url.indexOf(host) == -1){
 		if(!checkWithGoogle(url))
 			urlObj.url = "Flagged Bad Url - " + urlObj.url;
-	//};
 		}
 		// Set the status style based on server status code
 		var status = this.status().currentHTTPStatus;
 		//console.log(status); 
 		if( status == null)
 			status = 404;
+		//	console.log(urlObj.url);
 		// Checks HTTP Status if certain HTTP codes are to be ignored
 
 		if(ignore.indexOf(status) !== -1){

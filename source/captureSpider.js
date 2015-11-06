@@ -127,8 +127,12 @@ casper.then(function(){
 					limitingRegex || host,
 					[
 						function(view, urlObj) {
-							if(!Patterns.patternMatch(urlObj.url, Patterns.bigFileArr)) {
-								casper.open(urlObj.url);
+							if(Patterns.patternMatch(url, Patterns.bigFileArr)) {
+								casper.open(url, {
+						    		method: 'head'
+						        });
+							} else {
+								casper.open(url);
 							}
 							var save_location = screenshot_save_location(view, urlObj, folderName);
 							var save_location_file_exists = false; 
