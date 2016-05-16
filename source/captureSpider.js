@@ -1,5 +1,10 @@
-var casper = require('casper').create({/* verbose: true, logLevel: 'debug' */});
+var casper = require('casper').create({
+    pageSettings: {
+        webSecurityEnabled: false
+    }
+/* verbose: true, logLevel: 'debug' */});
 var casper2 = require('casper').create({/* verbose: true, logLevel: 'debug' */});
+var page = require('webpage').create();
 var Spider = require('./spider');
 var csv = require('./csv');
 var fs = require('fs');
@@ -64,11 +69,14 @@ function getPassword() {
 function screenshot_save_location(view, urlObj, destination) {
 	//console.log(view.getCurrentUrl()); 
 	var fileName = view.getCurrentUrl().replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
-//	console.log(urlObj.url); 
+	//console.log(urlObj.url); 
 	//var fileName = urlObj.url.replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
+	
 	return destination + '/' + encodeURIComponent(fileName) + ".png";
 }
 /////////////////////////////////////////////////////////////
+
+
 
 // Screenshot capturing function
 function screenshot(view, location, width, height, urlObj) {
@@ -148,6 +156,18 @@ casper.then(function(){
 									urlObj.screenshot = "[not taken]"; 
 								} 
 								else if (Patterns.bigFileUrl.test(urlObj.url)) {
+									// save documents to file
+									// console.log(fileName);
+									var fileName = urlObj.url.replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
+									var destination = folderName + '/' + fileName;
+									var fileTree = destination.substring(0, destination.indexOf('\/') + 1);
+									fs.makeTree(fileTree);
+									// console.log(fileName);
+									if(!fs.exists(destination)){
+										casper.download(urlObj.url, destination);
+									}
+									urlObj.screenshot = "[saved as document]";
+
 									// don't screenshot pdf because it won't be correct 
 								}
 								// do not retake 
@@ -157,6 +177,7 @@ casper.then(function(){
 								}
 								// retake or take 
 								else {
+									casper.download(urlObj.url, save_location + ".html");
 									var url_location = screenshot(view, save_location, width, height, urlObj);
 									urlObj.screenshot = url_location;
 								}

@@ -45,6 +45,7 @@ function checkWithGoogle(url){
 	});
 
 	// Captures screenshots and compares using pdiffy
+
 	casper.then(function() {
 		google_screenshot = 'data:image/png;base64,' + this.captureBase64('png');
 	});
@@ -180,6 +181,7 @@ if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
 		if(!checkWithGoogle(url))
 			urlObj.url = "Flagged Bad Url - " + urlObj.url;
 		}
+
 		// Set the status style based on server status code
 		var status = this.status().currentHTTPStatus;
 		//console.log(status); 

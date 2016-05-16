@@ -39,9 +39,11 @@ var blacklistArr = new Array (
 );
 
 var bigFileArr = new Array (
- 	/.*\.mp4\/?$/, 	// ...anything.mp4 
-	/.*\.zip\/?$/, 	// ...anything.zip 
-	/.*\.pdf\/?$/ 	// ...anything.pdf 
+	/.*\.gif\/?$/, /.*\.jpg\/?$/, /.*\.png\/?$/,
+	/.*\.bmp\/?$/, /.*\.eps\/?$/, /.*\.tif\/?$/, /.*\.pict\/?$/, /.*\.psd\/?$/,
+	/.*\.txt\/?$/, /.*\.rtf\/?$/, /.*\.pdf\/?$/, /.*\.doc\/?$/, /.*\.docx\/?$/, /.*\.odt\/?$/, /.*\.ppt\/?$/, /.*\.xlsx\/?$/, /.*\.ods\/?$/, /.*\.xml\/?$/, 
+ 	/.*\.mp4\/?$/, /.*\.avi\/?$/, /.*\.mov\/?$/, /.*\.mp3\/?$/, /.*\.ogg\/?$/, /.*\.wav\/?$/, 
+	/.*\.zip\/?$/, /.*\.bz2\/?$/, /.*\.dmg\/?$/, /.*\.gz\/?$/, /.*\.jar\/?$/, /.*\.rar\/?$/, /.*\.sit\/?$/, /.*\.tar\/?$/
 );
 
 // patternMatch: String Array -> Boolean 
@@ -62,7 +64,7 @@ function patternMatch(url, patternArr) {
 // wait for it to open 
 // png/jpeg/jpg/gif/pdf, wait for it 
 //var fileUrl = /\/[^\/]*\.(png|jpeg|jpg|gif|pdf)\/?$/; 
-var bigFileUrl = /\.(pdf|zip|mp4)\/?$/; 
+var bigFileUrl = /\.(gif|jpg|png|bmp|eps|tif|pict|psd|txt|rtf|pdf|doc|docx|odt|ppt|xlsx|ods|xml|mp4|avi|mov|mp3|ogg|wav|zip|bz2|dmg|gz|jar|rar|sit|tar)\/?$/; 
 
 exports.patternMatch = patternMatch;
 exports.blacklistArr = blacklistArr;
