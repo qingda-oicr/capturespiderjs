@@ -305,15 +305,6 @@ if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
 				// Scan for images with alt values
 				var linkTag = linkItem.tag;
 				var linkAlt = linkItem.alt;
-				if(linkTag == 'img' && link != undefined && link != ""){
-
-					var altTextElement = {
-						source: link,
-						alt: linkAlt,
-					};
-					altTexts.imgs.push(altTextElement);
-					//console.log(linkAlt);
-				}
 
 				var newUrl = helpers.absoluteUri(baseUrl, link);
 				if(ignoreParameters) {
@@ -327,6 +318,16 @@ if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
 					var wasVisited = false;
 					var wasSkipped = false; 
 					var isPending = false;
+
+					if(linkTag == 'img' && link != undefined && link != ""){
+
+						var altTextElement = {
+							source: newUrl,
+							alt: linkAlt,
+						};
+						altTexts.imgs.push(altTextElement);
+						//console.log(linkAlt);
+					}
 
 					//Check if already visited
 					for(var i = 0; i < visitedUrls.length; i++) {

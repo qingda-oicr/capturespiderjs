@@ -1,7 +1,4 @@
 var casper = require('casper').create({
-    pageSettings: {
-        webSecurityEnabled: false
-    }
 /* verbose: true, logLevel: 'debug' */});
 var casper2 = require('casper').create({/* verbose: true, logLevel: 'debug' */});
 var Spider = require('./spider');
