@@ -218,20 +218,38 @@ if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
 		}
 		else{
 			// Find links present on this page (node only mode is off)
+			// Links: contains tag, alt and origninal link
 			var links = this.evaluate(function() {
 				var links = [];
 				Array.prototype.forEach.call(__utils__.findAll('a'), function(e) {
-					links.push(e.getAttribute('href'));
+					var linkItem = {
+						source: e.getAttribute('href'),
+						tag: 'a',
+						alt: undefined,
+					};
+					links.push(linkItem);
+					//links.push(e.getAttribute('href'));
 				});
 				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
-			 		links.push(e.getAttribute('src'));
+					var linkItem = {
+						source: e.getAttribute('src'),
+						tag: 'img',
+						alt: e.getAttribute('alt'),
+					};
+					links.push(linkItem);
+			 		//links.push(e.getAttribute('src'));
 				});
 				Array.prototype.forEach.call(__utils__.findAll('area'), function(e) {
-					links.push(e.getAttribute('href'));	
+					var linkItem = {
+						source: e.getAttribute('href'),
+						tag: 'area',
+						alt: undefined,
+					};
+					links.push(linkItem);
+					//links.push(e.getAttribute('href'));	
 				});
 				return links;
 			});
-
 			///////////////////////////////////////////////////////////////////////////////////////////////
 			// find elements with alt tags. 
 			// if no alt tag, then status = 0000 
@@ -241,30 +259,62 @@ if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
 			// only add it to altTextUrls if and only if the alt tag is empty. 
 			// For that page, go through all alt tags. If empty, create an object and add it to the array. 
 
-/*
-			var altTexts = this.evaluate(function() {
-				var altTexts = [];
-				Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
-					//altTexts.push(e.getAttribute('alt'));
-					console.log("alt: " + e.getAttribute('alt'));
-					if(!e.getAttribute('alt') || e.getAttribute('alt') == "") {	// if no alt tag or empty  
-						var source = e.getAttribute('src'); 
-						console.log("source: " + source); 
-						// altTextElement.source = source;
-						// altTextElement.url = url; 
-					}
-				});
+			// var altTexts = this.evaluate(function() {
+			// 	casper.echo("test");
+			// 	var altTexts = {
+			// 		url: url,
+			// 		imgs: []
+			// 	};
+			// 	Array.prototype.forEach.call(__utils__.findAll('img'), function(e) {
+			// 		//altTexts.push(e.getAttribute('alt'));
+			// 		var source = e.getAttribute('src'); 
+			// 		var altTextElement = {
+			// 			source: source,
+			// 			alt: ""
+			// 		};
+			// 		var altValue = e.getAttribute('alt');
+			// 		//console.log("alt: " + altValue);
+			// 		if(!altValue || altValue == "") {	// if no alt tag or empty  
+			// 			altTextElement.alt = undefined;
+			// 		}
+			// 		else{
+			// 			altTextElement.alt = altValue;
+			// 		}
+			// 		//console.log("source: " + source);
 
-				return altTexts;
-			});
-*/
+			// 		altTexts.imgs.push(altTextElement);
+			// 	});
+
+			// 	return altTexts;
+			// });
+
+
+			// altTextUrls.push(altTexts);
 
 			//////////////////////////////////////////////////////////////////////////////////////////////
 
 			// Add newly found URLs to the stack
 			var baseUrl = this.getGlobal('location').href;
+			var altTexts = {
+				url: url,
+				imgs: [],
+			};
 			//console.log("baseUrl for " + url + " is " + baseUrl); 
-			Array.prototype.forEach.call(links, function(link) {
+			Array.prototype.forEach.call(links, function(linkItem) {
+				var link = linkItem.source;
+				// Scan for images with alt values
+				var linkTag = linkItem.tag;
+				var linkAlt = linkItem.alt;
+				if(linkTag == 'img' && link != undefined && link != ""){
+
+					var altTextElement = {
+						source: link,
+						alt: linkAlt,
+					};
+					altTexts.imgs.push(altTextElement);
+					//console.log(linkAlt);
+				}
+
 				var newUrl = helpers.absoluteUri(baseUrl, link);
 				if(ignoreParameters) {
 					newUrl = newUrl.replace(/\?.*$/, ''); //Ignoring PHP parameters
@@ -318,6 +368,7 @@ if(Patterns.patternMatch(url, Patterns.blacklistArr)) {
 					}
 				}
 			}); // endforeach 
+			altTextUrls.push(altTexts);
 		}
 	
 	});
@@ -379,7 +430,8 @@ exports.spider = function(url, limitingRegex, tasks) {
 		results.count = visitedUrls.length;
 		results.visitedUrls = visitedUrls;
 		results.pendingUrls = pendingUrls;
-		results.skippedUrls = skippedUrls; ////////////// 
+		results.skippedUrls = skippedUrls; 
+		results.altTextUrls = altTextUrls; ////////////// 
 	});
 	return results;
 };

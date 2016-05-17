@@ -4,7 +4,6 @@ var casper = require('casper').create({
     }
 /* verbose: true, logLevel: 'debug' */});
 var casper2 = require('casper').create({/* verbose: true, logLevel: 'debug' */});
-var page = require('webpage').create();
 var Spider = require('./spider');
 var csv = require('./csv');
 var fs = require('fs');
@@ -111,6 +110,37 @@ function screenshot(view, location, width, height, urlObj) {
 	return location;
 }
 
+// function downloadFile(downloadUrl, target){
+// 	this.thenEvaluate(function(url) {
+// 	    xhr = new XMLHttpRequest();
+// 	    xhr.addEventListener('load', function onTransferComplete() {
+// 	        // Set a flag when load completes, we'll keep checking it
+// 	        transferComplete = true;
+// 	    });
+// 	    xhr.open('GET', url, true); /* < ASYNC */
+// 	    xhr.responseType = 'arraybuffer';
+// 	    xhr.send(null);
+// 	}, downloadUrl);
+
+// 	this.waitFor(function check() {
+// 	    return this.evaluate(function() {
+// 	        return transferComplete;
+// 	    });
+// 	}, function then() {
+// 	    console.log('transferComplete!');
+// 	    var base64encoded = this.evaluate(function() {
+// 	        return btoa([].reduce.call(new Uint8Array(xhr.response), function(p, c) {
+// 	            return p + String.fromCharCode(c);
+// 	        }, ''));
+// 	    });
+// 	    /*clientutils = require('clientutils') */
+// 	    /*fs = require('fs') */
+// 	    var cu = clientutils.create(); 
+// 	    fs.write(target, cu.decode(base64encoded), 'wb');
+// 	});
+
+// }
+
 // Get hostname of first url
 casper.start(startUrl, function() {
 	phantom.injectJs('pdiffy.js'); 
@@ -160,7 +190,7 @@ casper.then(function(){
 									// console.log(fileName);
 									var fileName = urlObj.url.replace(/\/$/, '').replace(/^.*?:\/\//, '').replace(/^.*?\//, '');
 									var destination = folderName + '/' + fileName;
-									var fileTree = destination.substring(0, destination.indexOf('\/') + 1);
+									var fileTree = destination.substring(0, destination.indexOf('/') + 1);
 									fs.makeTree(fileTree);
 									// console.log(fileName);
 									if(!fs.exists(destination)){
@@ -187,6 +217,20 @@ casper.then(function(){
 					);
 });
 
+// Alt Value testing
+// casper.then(function(){
+// 	var altUrls = results.altTextUrls;
+
+// 	for(var i = 0; i < altUrls.length; i++){
+// 		var altPageUrl = altUrls[i].url;
+// 		var altPageImgs = altUrls[i].imgs;
+// 		console.log("on Page: " + altPageUrl);
+// 		for (var j = 0; j < altPageImgs.length; j++){
+// 			console.log("        Alt: " + altPageImgs[j].alt + "  Img: " + altPageImgs[j].source);
+// 		}
+// 	}
+// });
+
 
 casper.then(function() {
 	var elapsedTime = results.elapsedTime + " milliseconds"; 
@@ -199,13 +243,40 @@ casper.then(function() {
 		+ elapsedTime + ". (~"
 			+ results.count/(results.elapsedTime/1000) + " seconds per link)");
 	//console.log(csv.stringify(results.visitedUrls, parentPerLine));
+
+	// Convert altTextUrls to better output format
+	var altTextUrlsOut = [];
+
+	for (var i = 0; i < results.altTextUrls.length; i++){
+		for(var j = 0; j < results.altTextUrls[i].imgs.length; j++){
+			var altTextUrlsOutItem = {
+				url: "",
+				img: "",
+				alt: "",
+			};
+			altTextUrlsOutItem.url = results.altTextUrls[i].url;
+			altTextUrlsOutItem.img = results.altTextUrls[i].imgs[j].source;
+
+			if(results.altTextUrls[i].imgs[j].alt == undefined || results.altTextUrls[i].imgs[j].alt == ''){
+				altTextUrlsOutItem.alt = "\<missing alt\>";
+			}
+			else{
+				altTextUrlsOutItem.alt = results.altTextUrls[i].imgs[j].alt;
+			}
+
+			altTextUrlsOut.push(altTextUrlsOutItem);
+		}
+	}
+
 	// Outputting results
 	if(resultFormat == 'json') {
 		fs.write(folderName + '/visitedUrls.json', JSON.stringify(results.visitedUrls, parentPerLine), 'w');
+		fs.write(folderName + '/altTextUrls.json', JSON.stringify(altTextUrlsOut, parentPerLine), 'w');
 		if(results.pendingUrls) fs.write(folderName + '/pendingUrls.json', JSON.stringify(results.pendingUrls), 'w');
 		if(results.skippedUrls) fs.write(folderName + '/skippedUrls.json', JSON.stringify(results.skippedUrls), 'w');
 	} else {
 		fs.write(folderName + '/visitedUrls.tsv', csv.stringify(results.visitedUrls, parentPerLine), 'w');
+		fs.write(folderName + '/altTextUrls.tsv', csv.stringify(altTextUrlsOut, parentPerLine), 'w');
 		if(results.pendingUrls) fs.write(folderName + '/pendingUrls.tsv', csv.stringify(results.pendingUrls), 'w');
 		if(results.skippedUrls) fs.write(folderName + '/skippedUrls.tsv', csv.stringify(results.skippedUrls), 'w');
 	}
