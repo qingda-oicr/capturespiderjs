@@ -41,7 +41,7 @@ var blacklistArr = new Array (
 var bigFileArr = new Array (
 	/.*\.gif\/?$/, /.*\.jpg\/?$/, /.*\.png\/?$/, /.*\.jpeg\/?$/, 
 	/.*\.bmp\/?$/, /.*\.eps\/?$/, /.*\.tif\/?$/, /.*\.pict\/?$/, /.*\.psd\/?$/,
-	/.*\.txt\/?$/, /.*\.rtf\/?$/, /.*\.pdf\/?$/, /.*\.doc\/?$/, /.*\.docx\/?$/, /.*\.odt\/?$/, /.*\.ppt\/?$/, /.*\.xlsx\/?$/, /.*\.ods\/?$/, /.*\.xml\/?$/, 
+	/.*\.txt\/?$/, /.*\.rtf\/?$/, /.*\.pdf\/?$/, /.*\.doc\/?$/, /.*\.docx\/?$/, /.*\.odt\/?$/, /.*\.ppt\/?$/, /.*\.xlsx\/?$/, /.*\.ods\/?$/, 
  	/.*\.mp4\/?$/, /.*\.avi\/?$/, /.*\.mov\/?$/, /.*\.mp3\/?$/, /.*\.ogg\/?$/, /.*\.wav\/?$/, 
 	/.*\.zip\/?$/, /.*\.bz2\/?$/, /.*\.dmg\/?$/, /.*\.gz\/?$/, /.*\.jar\/?$/, /.*\.rar\/?$/, /.*\.sit\/?$/, /.*\.tar\/?$/
 );
@@ -64,7 +64,7 @@ function patternMatch(url, patternArr) {
 // wait for it to open 
 // png/jpeg/jpg/gif/pdf, wait for it 
 //var fileUrl = /\/[^\/]*\.(png|jpeg|jpg|gif|pdf)\/?$/; 
-var bigFileUrl = /\.(gif|jpg|png|jpeg|bmp|eps|tif|pict|psd|txt|rtf|pdf|doc|docx|odt|ppt|xlsx|ods|xml|mp4|avi|mov|mp3|ogg|wav|zip|bz2|dmg|gz|jar|rar|sit|tar)\/?$/; 
+var bigFileUrl = /\.(gif|jpg|png|jpeg|bmp|eps|tif|pict|psd|txt|rtf|pdf|doc|docx|odt|ppt|xlsx|ods|mp4|avi|mov|mp3|ogg|wav|zip|bz2|dmg|gz|jar|rar|sit|tar)\/?$/; 
 
 exports.patternMatch = patternMatch;
 exports.blacklistArr = blacklistArr;
